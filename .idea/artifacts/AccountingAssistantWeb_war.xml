@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="AccountingAssistantWeb:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="accountingassistant-web.war">
+      <element id="artifact" artifact-name="AccountingAssistantWeb:war exploded" />
+    </root>
+  </artifact>
+</component>
