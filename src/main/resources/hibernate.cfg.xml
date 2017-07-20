@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- Database connection settings -->
+        <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="connection.url">jdbc:mysql://localhost:3306/AccountingAssistant?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;serverTimezone=UTC</property>
+        <property name="connection.username">root</property>
+        <property name="connection.password">84219218</property>
+
+        <!-- JDBC connection pool (use the built-in) -->
+        <property name="connection.pool_size">30</property>
+
+        <!-- SQL dialect -->
+        <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+
+        <!-- Enable Hibernate's automatic session context management -->
+        <property name="current_session_context_class">thread</property>
+
+        <!-- Echo all executed SQL to stdout -->
+        <property name="show_sql">false</property>
+
+        <mapping class="com.cirnoteam.accountingassistant.web.entities.User"/>
+        <mapping class="com.cirnoteam.accountingassistant.web.entities.Device"/>
+        <mapping class="com.cirnoteam.accountingassistant.web.entities.Log"/>
+        <mapping class="com.cirnoteam.accountingassistant.web.entities.Book"/>
+        <mapping class="com.cirnoteam.accountingassistant.web.entities.Account"/>
+        <mapping class="com.cirnoteam.accountingassistant.web.entities.Record"/>
+        <mapping class="com.cirnoteam.accountingassistant.web.entities.Dirty"/>
+
+    </session-factory>
+</hibernate-configuration>
