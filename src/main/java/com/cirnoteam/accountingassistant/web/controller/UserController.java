@@ -20,7 +20,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Properties;
@@ -142,6 +144,9 @@ public class UserController {
         }
         try {
             String resetToken = UserUtils.verifyResetAuth(username, email);
+            if (!sendMail(email, UserUtils.getResetCode(username), username)) {
+                return new Response(400, "重置邮件发送失败！");
+            }
             return new Response(200).setEntity(new ResetRespEntity(resetToken));
         } catch (DbException e) {
             return new Response(500, e.getMessage());
@@ -184,12 +189,12 @@ public class UserController {
     public Response avatar(HttpServletRequest request) {
 
     }
-
-    @RequestMapping("/")
-    public void index(HttpServletRequest request, HttpServletResponse response) {
-
-    }
     */
+    @RequestMapping("/")
+    public void index(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.sendRedirect("index.htm");
+    }
+
 
     private boolean sendMail(String email, String code, String username) {
         try {

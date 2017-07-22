@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="accountingassistant@localhost">
+  <database-model serializer="dbm" rdbms="MYSQL" format-version="4.2">
+    <root id="1"/>
+    <schema id="2" parent="1" name="accountingassistant">
+      <Current>1</Current>
+      <Visible>1</Visible>
+    </schema>
+    <schema id="3" parent="1" name="experiment"/>
+    <schema id="4" parent="1" name="homework3"/>
+    <schema id="5" parent="1" name="homework4"/>
+    <schema id="6" parent="1" name="homework5"/>
+    <schema id="7" parent="1" name="iidx"/>
+    <schema id="8" parent="1" name="information_schema"/>
+    <schema id="9" parent="1" name="initial"/>
+    <schema id="10" parent="1" name="mysql"/>
+    <schema id="11" parent="1" name="performance_schema"/>
+    <schema id="12" parent="1" name="sys"/>
+    <schema id="13" parent="1" name="user_01"/>
+    <schema id="14" parent="1" name="user_02"/>
+    <table id="15" parent="2" name="account"/>
+    <table id="16" parent="2" name="book"/>
+    <table id="17" parent="2" name="device"/>
+    <table id="18" parent="2" name="dirty"/>
+    <table id="19" parent="2" name="log"/>
+    <table id="20" parent="2" name="record"/>
+    <table id="21" parent="2" name="user"/>
+    <column id="22" parent="15" name="id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="23" parent="15" name="bookid">
+      <Position>2</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="24" parent="15" name="type">
+      <Position>3</Position>
+      <DataType>tinyint(4)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="25" parent="15" name="balance">
+      <Position>4</Position>
+      <DataType>float|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="26" parent="15" name="name">
+      <Position>5</Position>
+      <DataType>varchar(255)|0</DataType>
+    </column>
+    <index id="27" parent="15" name="bookid">
+      <ColNames>bookid</ColNames>
+    </index>
+    <key id="28" parent="15" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="29" parent="15" name="account_ibfk_1">
+      <ColNames>bookid</ColNames>
+      <RefSchemaName>accountingassistant</RefSchemaName>
+      <RefTableName>book</RefTableName>
+      <RefColNames>id</RefColNames>
+    </foreign-key>
+    <column id="30" parent="16" name="id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="31" parent="16" name="username">
+      <Position>2</Position>
+      <DataType>varchar(24)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="32" parent="16" name="name">
+      <Position>3</Position>
+      <DataType>varchar(255)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="33" parent="16" name="username">
+      <ColNames>username</ColNames>
+    </index>
+    <key id="34" parent="16" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="35" parent="16" name="book_ibfk_1">
+      <ColNames>username</ColNames>
+      <RefSchemaName>accountingassistant</RefSchemaName>
+      <RefTableName>user</RefTableName>
+      <RefColNames>username</RefColNames>
+    </foreign-key>
+    <column id="36" parent="17" name="uuid">
+      <Position>1</Position>
+      <DataType>char(32)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="37" parent="17" name="username">
+      <Position>2</Position>
+      <DataType>varchar(24)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="38" parent="17" name="name">
+      <Position>3</Position>
+      <DataType>varchar(24)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="39" parent="17" name="token">
+      <Position>4</Position>
+      <DataType>char(32)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="40" parent="17" name="tokenTime">
+      <Position>5</Position>
+      <DataType>timestamp|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    </column>
+    <column id="41" parent="17" name="syncTime">
+      <Position>6</Position>
+      <DataType>timestamp|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    </column>
+    <index id="42" parent="17" name="username">
+      <ColNames>username</ColNames>
+    </index>
+    <key id="43" parent="17" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>uuid</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="44" parent="17" name="device_ibfk_1">
+      <ColNames>username</ColNames>
+      <RefSchemaName>accountingassistant</RefSchemaName>
+      <RefTableName>user</RefTableName>
+      <RefColNames>username</RefColNames>
+    </foreign-key>
+    <column id="45" parent="18" name="id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="46" parent="18" name="uuid">
+      <Position>2</Position>
+      <DataType>char(32)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="47" parent="18" name="rid">
+      <Position>3</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="48" parent="18" name="type">
+      <Position>4</Position>
+      <DataType>tinyint(4)|0</DataType>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <column id="49" parent="18" name="deleted">
+      <Position>5</Position>
+      <DataType>tinyint(1)|0</DataType>
+    </column>
+    <column id="50" parent="18" name="time">
+      <Position>6</Position>
+      <DataType>timestamp|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    </column>
+    <index id="51" parent="18" name="uuid">
+      <ColNames>uuid</ColNames>
+    </index>
+    <key id="52" parent="18" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="53" parent="18" name="dirty_ibfk_1">
+      <ColNames>uuid</ColNames>
+      <RefSchemaName>accountingassistant</RefSchemaName>
+      <RefTableName>device</RefTableName>
+      <RefColNames>uuid</RefColNames>
+    </foreign-key>
+    <column id="54" parent="19" name="id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="55" parent="19" name="username">
+      <Position>2</Position>
+      <DataType>varchar(24)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="56" parent="19" name="time">
+      <Position>3</Position>
+      <DataType>timestamp|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    </column>
+    <index id="57" parent="19" name="username">
+      <ColNames>username</ColNames>
+    </index>
+    <key id="58" parent="19" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="59" parent="19" name="log_ibfk_1">
+      <ColNames>username</ColNames>
+      <RefSchemaName>accountingassistant</RefSchemaName>
+      <RefTableName>user</RefTableName>
+      <RefColNames>username</RefColNames>
+    </foreign-key>
+    <column id="60" parent="20" name="id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="61" parent="20" name="accountid">
+      <Position>2</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="62" parent="20" name="expense">
+      <Position>3</Position>
+      <DataType>tinyint(1)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="63" parent="20" name="amount">
+      <Position>4</Position>
+      <DataType>float|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="64" parent="20" name="remark">
+      <Position>5</Position>
+      <DataType>varchar(255)|0</DataType>
+    </column>
+    <column id="65" parent="20" name="type">
+      <Position>6</Position>
+      <DataType>tinyint(4)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="66" parent="20" name="time">
+      <Position>7</Position>
+      <DataType>datetime|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="67" parent="20" name="accountid">
+      <ColNames>accountid</ColNames>
+    </index>
+    <key id="68" parent="20" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <foreign-key id="69" parent="20" name="record_ibfk_1">
+      <ColNames>accountid</ColNames>
+      <RefSchemaName>accountingassistant</RefSchemaName>
+      <RefTableName>account</RefTableName>
+      <RefColNames>id</RefColNames>
+    </foreign-key>
+    <column id="70" parent="21" name="username">
+      <Position>1</Position>
+      <DataType>varchar(24)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="71" parent="21" name="password">
+      <Position>2</Position>
+      <DataType>char(32)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="72" parent="21" name="email">
+      <Position>3</Position>
+      <DataType>varchar(48)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="73" parent="21" name="avatar">
+      <Position>4</Position>
+      <DataType>varchar(32)|0</DataType>
+    </column>
+    <column id="74" parent="21" name="activateToken">
+      <Position>5</Position>
+      <DataType>char(32)|0</DataType>
+    </column>
+    <column id="75" parent="21" name="activateCode">
+      <Position>6</Position>
+      <DataType>char(6)|0</DataType>
+    </column>
+    <column id="76" parent="21" name="activateTime">
+      <Position>7</Position>
+      <DataType>timestamp|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    </column>
+    <column id="77" parent="21" name="resetToken">
+      <Position>8</Position>
+      <DataType>char(32)|0</DataType>
+    </column>
+    <column id="78" parent="21" name="resetCode">
+      <Position>9</Position>
+      <DataType>char(6)|0</DataType>
+    </column>
+    <column id="79" parent="21" name="resetTime">
+      <Position>10</Position>
+      <DataType>timestamp|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    </column>
+    <index id="80" parent="21" name="email">
+      <ColNames>email</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <key id="81" parent="21" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>username</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <key id="82" parent="21" name="email">
+      <ColNames>email</ColNames>
+      <UnderlyingIndexName>email</UnderlyingIndexName>
+    </key>
+  </database-model>
+</dataSource>

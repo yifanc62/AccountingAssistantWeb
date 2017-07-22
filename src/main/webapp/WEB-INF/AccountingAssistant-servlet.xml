@@ -48,5 +48,6 @@
     </bean>
     <mvc:resources mapping="/images/*" location="/images/"/>
     <mvc:resources mapping="/avatar/*" location="/avatar/"/>
-    <mvc:resources mapping="/favicon.ico" location="/"/>
+    <mvc:resources mapping="/*.ico" location="/"/>
+    <mvc:resources mapping="/*.htm" location="/"/>
 </beans>
