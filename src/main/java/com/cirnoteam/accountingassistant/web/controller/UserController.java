@@ -1,19 +1,27 @@
 package com.cirnoteam.accountingassistant.web.controller;
 
 import com.cirnoteam.accountingassistant.web.database.DbException;
+import com.cirnoteam.accountingassistant.web.database.RequestException;
 import com.cirnoteam.accountingassistant.web.database.UserUtils;
 import com.cirnoteam.accountingassistant.web.json.LoginRespEntity;
 import com.cirnoteam.accountingassistant.web.json.RegisterRespEntity;
+import com.cirnoteam.accountingassistant.web.json.ResetRespEntity;
 import com.cirnoteam.accountingassistant.web.json.Response;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Properties;
 
@@ -51,6 +59,8 @@ public class UserController {
             }
             return new Response(500);
         } catch (DbException e) {
+            return new Response(500, e.getMessage());
+        } catch (RequestException e) {
             return new Response(400, e.getMessage());
         }
     }
@@ -70,6 +80,8 @@ public class UserController {
             }
             return new Response(500);
         } catch (DbException e) {
+            return new Response(500, e.getMessage());
+        } catch (RequestException e) {
             return new Response(400, e.getMessage());
         }
     }
@@ -90,6 +102,8 @@ public class UserController {
             }
             return new Response(200).setEntity(new RegisterRespEntity(activateToken));
         } catch (DbException e) {
+            return new Response(500, e.getMessage());
+        } catch (RequestException e) {
             return new Response(400, e.getMessage());
         }
     }
@@ -112,9 +126,70 @@ public class UserController {
             }
             return new Response(500);
         } catch (DbException e) {
+            return new Response(500, e.getMessage());
+        } catch (RequestException e) {
             return new Response(400, e.getMessage());
         }
     }
+
+    @ResponseBody
+    @RequestMapping("/authreset")
+    public Response authreset(HttpServletRequest request) {
+        String username = request.getParameter("username");
+        String email = request.getParameter("email");
+        if (username == null || email == null) {
+            return new Response(400, "参数无效！");
+        }
+        try {
+            String resetToken = UserUtils.verifyResetAuth(username, email);
+            return new Response(200).setEntity(new ResetRespEntity(resetToken));
+        } catch (DbException e) {
+            return new Response(500, e.getMessage());
+        } catch (RequestException e) {
+            return new Response(400, e.getMessage());
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping("/reset")
+    public Response reset(HttpServletRequest request) {
+        String username = request.getParameter("username");
+        String resetToken = request.getParameter("token");
+        String resetCode = request.getParameter("code");
+        String newPassword = request.getParameter("password");
+        if (username == null || resetToken == null || resetCode == null || newPassword == null) {
+            return new Response(400, "参数无效！");
+        }
+        try {
+            if (UserUtils.reset(resetToken, resetCode)) {
+                UserUtils.resetPassword(username, newPassword);
+                return new Response(200);
+            }
+            return new Response(500);
+        } catch (DbException e) {
+            return new Response(500, e.getMessage());
+        } catch (RequestException e) {
+            return new Response(400, e.getMessage());
+        }
+    }
+
+    /*
+    @GetMapping("/avatar")
+    public void avatar(HttpServletRequest request, HttpServletResponse response) {
+        String username = request.getParameter("username");
+    }
+
+    @ResponseBody
+    @PostMapping("/avatar")
+    public Response avatar(HttpServletRequest request) {
+
+    }
+
+    @RequestMapping("/")
+    public void index(HttpServletRequest request, HttpServletResponse response) {
+
+    }
+    */
 
     private boolean sendMail(String email, String code, String username) {
         try {
@@ -144,8 +219,36 @@ public class UserController {
         MimeMessage message = new MimeMessage(session);
         message.setFrom(new InternetAddress("cirnoteam@varkarix.com", "Cirno Team", "UTF-8"));
         message.setRecipient(MimeMessage.RecipientType.TO, new InternetAddress(receiveMail, username, "UTF-8"));
-        message.setSubject("[请勿回复]⑨号账本邮箱验证码", "UTF-8");
-        message.setContent(getMessage(code, username), "text/html;charset=UTF-8");
+        message.setSubject("[请勿回复] ⑨号账本邮箱验证码", "UTF-8");
+        MimeMultipart contentMulti = new MimeMultipart("related");
+        MimeBodyPart textBody = new MimeBodyPart();
+        textBody.setContent(getMessage(code, username), "text/html;charset=UTF-8");
+        contentMulti.addBodyPart(textBody);
+        MimeBodyPart body_bg = new MimeBodyPart();
+        FileDataSource source_bg = new FileDataSource(new File(URLDecoder.decode(UserController.class.getResource("/bg.jpg").getPath(), "UTF-8")));
+        body_bg.setDataHandler(new DataHandler(source_bg));
+        body_bg.setContentID("bg");
+        MimeBodyPart body_bg2 = new MimeBodyPart();
+        FileDataSource source_bg2 = new FileDataSource(new File(URLDecoder.decode(UserController.class.getResource("/bg2.jpg").getPath(), "UTF-8")));
+        body_bg2.setDataHandler(new DataHandler(source_bg2));
+        body_bg2.setContentID("bg2");
+        MimeBodyPart body_logo = new MimeBodyPart();
+        FileDataSource source_logo = new FileDataSource(new File(URLDecoder.decode(UserController.class.getResource("/logo.jpg").getPath(), "UTF-8")));
+        body_logo.setDataHandler(new DataHandler(source_logo));
+        body_logo.setContentID("logo");
+        MimeBodyPart body_cirno = new MimeBodyPart();
+        FileDataSource source_cirno = new FileDataSource(new File(URLDecoder.decode(UserController.class.getResource("/cirno.png").getPath(), "UTF-8")));
+        body_cirno.setDataHandler(new DataHandler(source_cirno));
+        body_cirno.setContentID("cirno");
+        contentMulti.addBodyPart(body_bg);
+        contentMulti.addBodyPart(body_bg2);
+        contentMulti.addBodyPart(body_logo);
+        contentMulti.addBodyPart(body_cirno);
+        MimeBodyPart result = new MimeBodyPart();
+        result.setContent(contentMulti);
+        MimeMultipart m = new MimeMultipart();
+        m.addBodyPart(result);
+        message.setContent(m);
         message.setSentDate(new Date());
         message.saveChanges();
         return message;
@@ -164,11 +267,11 @@ public class UserController {
                 "\t\t\t<td style=\"padding: 10px 0 30px 0;\">\n" +
                 "\t\t\t\t<table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" style=\"border: 1px solid #cccccc; border-collapse: collapse;\">\n" +
                 "\t\t\t\t\t<tr>\n" +
-                "\t\t\t\t\t\t<td align=\"center\" background=\"http://cirnoteam.varkarix.com/mail/bg2.jpg\" bgcolor=\"#70bbd9\" style=\"padding: 40px 0 30px 0; color: #153643; font-size: 28px; font-weight: bold; font-family: Arial, sans-serif;\">\n" +
-                "\t\t\t\t\t\t\t<img src=\"http://cirnoteam.varkarix.com/mail/cirno2.png\" width=\"198\" height=\"213\" style=\"display: block;\" />\n" +
+                "\t\t\t\t\t\t<td align=\"center\" background=\"cid:bg2\" bgcolor=\"#70bbd9\" style=\"padding: 40px 0 30px 0; color: #153643; font-size: 28px; font-weight: bold; font-family: Arial, sans-serif;\">\n" +
+                "\t\t\t\t\t\t\t<img src=\"cid:cirno\" width=\"198\" height=\"213\" style=\"display: block;\" />\n" +
                 "\t\t\t\t\t\t</td>\n" +
                 "\t\t\t\t\t<tr>\n" +
-                "\t\t\t\t\t\t<td background=\"http://cirnoteam.varkarix.com/mail/bg.jpg\" style=\"padding: 40px 30px 40px 30px;\">\n" +
+                "\t\t\t\t\t\t<td background=\"cid:bg\" style=\"padding: 40px 30px 40px 30px;\">\n" +
                 "\t\t\t\t\t\t\t<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n" +
                 "\t\t\t\t\t\t\t\t<tr>\n" +
                 "\t\t\t\t\t\t\t\t\t<td style=\"color: #153643; font-family: Arial, sans-serif; font-size: 24px;\">\n" +
@@ -182,7 +285,7 @@ public class UserController {
                 "\t\t\t\t\t\t\t\t</tr>\n" +
                 "\t\t\t\t\t\t\t\t<tr>\n" +
                 "\t\t\t\t\t\t\t\t\t<td style=\"color: #153643; font-family: Arial, sans-serif; font-size: 24px;\">\n" +
-                "\t\t\t\t\t\t\t\t\t\t<center><b><font size=\"7\">" + code + "</br></b>\n" +
+                "\t\t\t\t\t\t\t\t\t\t<center><b><font size=\"7\">" + code + "</font></b></center>\n" +
                 "\t\t\t\t\t\t\t\t\t</td>\n" +
                 "\t\t\t\t\t\t\t\t</tr>\n" +
                 "\t\t\t\t\t\t\t\t<tr>\n" +
@@ -213,7 +316,7 @@ public class UserController {
                 "\t\t\t\t\t\t\t\t\t\t\t\t<td style=\"font-size: 0; line-height: 0;\" width=\"20\">&nbsp;</td>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t<td style=\"font-family: Arial, sans-serif; font-size: 12px; font-weight: bold;\">\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t<a style=\"color: #ffffff;\">\n" +
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t<img src=\"http://cirnoteam.varkarix.com/mail/logo.jpg\" width=\"70\" height=\"70\" style=\"display: block;\" border=\"0\" />\n" +
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t<img src=\"cid:logo\" width=\"70\" height=\"70\" style=\"display: block;\" border=\"0\" />\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t</a>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t</td>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t</tr>\n" +

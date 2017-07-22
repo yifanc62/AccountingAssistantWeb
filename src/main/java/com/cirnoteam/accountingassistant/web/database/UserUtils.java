@@ -131,15 +131,15 @@ public class UserUtils {
         }
     }
 
-    public static String addUser(String username, String password, String email) throws DbException {
+    public static String addUser(String username, String password, String email) throws RequestException, DbException {
         if (isUserExists(username)) {
-            throw new DbException("用户名已存在！");
+            throw new RequestException("用户名已存在！");
         }
         if (isEmailExists(email)) {
-            throw new DbException("邮箱已存在！");
+            throw new RequestException("邮箱已存在！");
         }
         if (password.length() != 32) {
-            throw new DbException("密码md5长度错误！");
+            throw new RequestException("密码md5长度错误！");
         }
         String activateToken = generateUuid();
         String activateCode = generateVerifyCode();
@@ -181,7 +181,7 @@ public class UserUtils {
         }
     }
 
-    public static boolean verifyToken(String token, String uuid) throws DbException {
+    public static boolean verifyToken(String token, String uuid) throws RequestException, DbException {
         Session session = null;
         try {
             session = factory.openSession();
@@ -192,13 +192,13 @@ public class UserUtils {
             criteria.select(deviceRoot).where(builder.and(builder.equal(deviceRoot.get("uuid"), uuid), builder.equal(deviceRoot.get("token"), token)));
             Device device = session.createQuery(criteria).uniqueResult();
             if (device == null) {
-                throw new DbException("无效的token和UUID！");
+                throw new RequestException("无效的token和/或UUID！");
             }
             session.getTransaction().commit();
             Calendar calendar = GregorianCalendar.getInstance();
             calendar.add(Calendar.DAY_OF_MONTH, -15);
             if (device.getTokenTime().before(calendar.getTime())) {
-                throw new DbException("登录信息已过期，请重新填写！");
+                throw new RequestException("登录信息已过期，请重新填写！");
             }
             return true;
         } catch (HibernateException e) {
@@ -210,7 +210,7 @@ public class UserUtils {
         }
     }
 
-    public static boolean activate(String activateToken, String code) throws DbException {
+    public static boolean activate(String activateToken, String code) throws RequestException, DbException {
         Session session = null;
         try {
             session = factory.openSession();
@@ -221,14 +221,14 @@ public class UserUtils {
             criteria.select(userRoot).where(builder.equal(userRoot.get("activateToken"), activateToken));
             User user = session.createQuery(criteria).uniqueResult();
             if (user == null) {
-                throw new DbException("无效的激活token！");
+                throw new RequestException("无效的激活token！");
             }
             session.getTransaction().commit();
             Calendar calendar = GregorianCalendar.getInstance();
             calendar.add(Calendar.MINUTE, -5);
             if (user.getActivateCode().equals(code)) {
                 if (user.getActivateTime().before(calendar.getTime())) {
-                    throw new DbException("验证码已失效，请重新注册！");
+                    throw new RequestException("验证码已失效，请重新注册！");
                 } else {
                     user.setActivateToken(null);
                     user.setActivateCode(null);
@@ -237,7 +237,7 @@ public class UserUtils {
                     return true;
                 }
             } else {
-                throw new DbException("验证码错误！");
+                throw new RequestException("验证码错误！");
             }
         } catch (HibernateException e) {
             e.printStackTrace();
@@ -248,7 +248,7 @@ public class UserUtils {
         }
     }
 
-    public static boolean reset(String resetToken, String code) throws DbException {
+    public static boolean reset(String resetToken, String code) throws RequestException, DbException {
         Session session = null;
         try {
             session = factory.openSession();
@@ -259,14 +259,14 @@ public class UserUtils {
             criteria.select(userRoot).where(builder.equal(userRoot.get("resetToken"), resetToken));
             User user = session.createQuery(criteria).uniqueResult();
             if (user == null) {
-                throw new DbException("无效的重置token！");
+                throw new RequestException("无效的重置token！");
             }
             session.getTransaction().commit();
             Calendar calendar = GregorianCalendar.getInstance();
             calendar.add(Calendar.HOUR, -1);
             if (user.getResetCode().equals(code)) {
                 if (user.getResetTime().before(calendar.getTime())) {
-                    throw new DbException("验证码已失效，请重新注册！");
+                    throw new RequestException("验证码已失效，请重新操作！");
                 } else {
                     user.setResetToken(null);
                     user.setResetCode(null);
@@ -275,7 +275,7 @@ public class UserUtils {
                     return true;
                 }
             } else {
-                throw new DbException("验证码错误！");
+                throw new RequestException("验证码错误！");
             }
         } catch (HibernateException e) {
             e.printStackTrace();
@@ -286,9 +286,9 @@ public class UserUtils {
         }
     }
 
-    public static boolean verifyResetAuth(String username, String email) throws DbException {
+    public static String verifyResetAuth(String username, String email) throws RequestException, DbException {
         if (!isUserExists(username)) {
-            throw new DbException("用户名不存在！");
+            throw new RequestException("用户名不存在！");
         }
         Session session = null;
         try {
@@ -300,37 +300,32 @@ public class UserUtils {
             criteria.select(userRoot).where(builder.and(builder.equal(userRoot.get("username"), username), builder.equal(userRoot.get("email"), email)));
             User user = session.createQuery(criteria).uniqueResult();
             if (user == null) {
-                throw new DbException("用户名与邮箱不符！");
+                throw new RequestException("用户名与邮箱不符！");
             }
+            String resetToken = generateUuid();
+            String resetCode = generateVerifyCode();
+            user.setResetToken(resetToken);
+            user.setResetCode(resetCode);
+            user.setResetTime(new Date());
+            updateUser(session, user);
             session.getTransaction().commit();
-            return true;
+            return resetToken;
         } catch (HibernateException e) {
             e.printStackTrace();
             if (session != null) {
                 session.getTransaction().rollback();
             }
-            throw new DbException("获取设备失败！");
+            throw new DbException("获取用户失败！");
         }
     }
 
-    public static void resetPassword(String username, String newPassword) throws DbException {
+    public static void resetPassword(String username, String newPassword) throws RequestException, DbException {
         if (newPassword.length() != 32) {
-            throw new DbException("密码md5长度错误！");
+            throw new RequestException("密码md5长度错误！");
         }
         User user = getUser(username);
         user.setPassword(newPassword);
         updateUser(factory.openSession(), user);
-    }
-
-    public static String addResetToken(String username) throws DbException {
-        String resetToken = generateUuid();
-        String resetCode = generateVerifyCode();
-        User user = getUser(username);
-        user.setResetToken(resetToken);
-        user.setResetCode(resetCode);
-        user.setResetTime(new Date());
-        updateUser(factory.openSession(), user);
-        return resetToken;
     }
 
     public static String addDevice(String username, String uuid, String deviceName) throws DbException {
@@ -403,40 +398,51 @@ public class UserUtils {
         }
     }
 
-    public static boolean login(String username, String password) throws DbException {
+    public static boolean login(String username, String password) throws RequestException, DbException {
         User user = getUser(username);
         if (user == null) {
-            throw new DbException("用户名不存在！");
+            throw new RequestException("用户名不存在！");
         }
         if (user.getLogs().size() >= 10) {
-            throw new DbException("密码输入错误次数过多，请稍后再试！");
+            throw new RequestException("密码输入错误次数过多，请稍后再试！");
         }
         if (!user.getPassword().equals(password)) {
             addLogAfterLoginFailed(username);
-            throw new DbException("密码错误！");
+            throw new RequestException("密码错误！");
         }
         return true;
     }
 
-    public static String getActivateCode(String username) throws DbException {
+    public static String getActivateCode(String username) throws RequestException, DbException {
         User user = getUser(username);
         if (user == null) {
-            throw new DbException("用户名不存在！");
+            throw new RequestException("用户名不存在！");
         }
         if (user.getActivateCode() == null) {
-            throw new DbException("逻辑错误：验证码在数据库中不存在！");
+            throw new DbException("验证码没有生成！");
         }
         return user.getActivateCode();
     }
 
-    public static String getResetCode(String username) throws DbException {
+    public static String getResetCode(String username) throws RequestException, DbException {
         User user = getUser(username);
         if (user == null) {
-            throw new DbException("用户名不存在！");
+            throw new RequestException("用户名不存在！");
         }
         if (user.getResetCode() == null) {
-            throw new DbException("逻辑错误：验证码在数据库中不存在！");
+            throw new DbException("验证码没有生成！");
         }
         return user.getResetCode();
+    }
+
+    public static String getAvatarPath(String username) throws RequestException, DbException {
+        User user = getUser(username);
+        if (user == null) {
+            throw new RequestException("用户名不存在！");
+        }
+        if (user.getAvatar() == null) {
+            throw new RequestException("用户头像不存在！");
+        }
+        return user.getAvatar();
     }
 }
