@@ -8,8 +8,8 @@ import com.cirnoteam.accountingassistant.web.json.RegisterRespEntity;
 import com.cirnoteam.accountingassistant.web.json.ResetRespEntity;
 import com.cirnoteam.accountingassistant.web.json.Response;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -22,7 +22,9 @@ import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Properties;
@@ -178,23 +180,78 @@ public class UserController {
         }
     }
 
-    /*
+
     @GetMapping("/avatar")
-    public void avatar(HttpServletRequest request, HttpServletResponse response) {
+    public void avatar(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String username = request.getParameter("username");
+        if (username == null) {
+            response.sendError(400, "参数无效！");
+            return;
+        }
+        try {
+            String filePath = request.getSession().getServletContext().getRealPath("/") + "avatar/" + UserUtils.getAvatarPath(username) + ".png";
+            response.setContentType("image/png");
+            File file = new File(filePath);
+            FileInputStream in = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            int length = in.read(data);
+            if (length != file.length()) {
+                throw new DbException("文件读取错误！");
+            }
+            OutputStream os = response.getOutputStream();
+            os.write(data);
+            os.flush();
+            os.close();
+        } catch (DbException e) {
+            response.sendError(500, e.getMessage());
+        } catch (RequestException e) {
+            response.sendError(400, e.getMessage());
+        }
     }
 
     @ResponseBody
     @PostMapping("/avatar")
-    public Response avatar(HttpServletRequest request) {
-
+    public Response avatar(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+        String username = request.getParameter("username");
+        if (username == null) {
+            return new Response(400, "参数无效！");
+        }
+        try {
+            if (saveFile(request, file, username)) {
+                if (UserUtils.setAvatarPath(username, username + "-avatar")) {
+                    return new Response(200);
+                }
+            }
+            return new Response(500);
+        } catch (DbException e) {
+            return new Response(500, e.getMessage());
+        } catch (RequestException e) {
+            return new Response(400, e.getMessage());
+        }
     }
-    */
+
+
     @RequestMapping("/")
     public void index(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.sendRedirect("index.htm");
     }
 
+    private boolean saveFile(HttpServletRequest request, MultipartFile file, String username) {
+        if (!file.isEmpty()) {
+            try {
+                // 保存的文件路径(如果用的是Tomcat服务器，文件会上传到\\%TOMCAT_HOME%\\webapps\\YourWebProject\\upload\\文件夹中  )
+                String filePath = request.getSession().getServletContext().getRealPath("/") + "avatar/" + username + "-avatar.png";
+                File saveDir = new File(filePath);
+                if (!saveDir.getParentFile().exists())
+                    saveDir.getParentFile().mkdirs();
+                file.transferTo(saveDir);
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
 
     private boolean sendMail(String email, String code, String username) {
         try {

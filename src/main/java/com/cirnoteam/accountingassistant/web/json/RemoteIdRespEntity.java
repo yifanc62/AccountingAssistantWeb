@@ -1,0 +1,29 @@
+package com.cirnoteam.accountingassistant.web.json;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Created by Yifan on 2017/7/23.
+ */
+public class RemoteIdRespEntity {
+    private Map<Long, Long> idMap;
+
+    public RemoteIdRespEntity() {
+        this.idMap = new HashMap<>();
+    }
+
+    public Map<Long, Long> getIdMap() {
+        return idMap;
+    }
+
+    public RemoteIdRespEntity setIdMap(Map<Long, Long> idMap) {
+        this.idMap = idMap;
+        return this;
+    }
+
+    public RemoteIdRespEntity addIdPair(Long id, Long remoteId) {
+        idMap.put(id, remoteId);
+        return this;
+    }
+}

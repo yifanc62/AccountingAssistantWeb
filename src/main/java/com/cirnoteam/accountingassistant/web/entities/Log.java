@@ -3,7 +3,6 @@ package com.cirnoteam.accountingassistant.web.entities;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -17,7 +16,7 @@ import java.util.Date;
 @Entity
 @Table(name = "log", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
 public class Log {
-    private Integer id;
+    private Long id;
     private User user;
     private Date time;
 
@@ -25,12 +24,8 @@ public class Log {
     @GeneratedValue(generator = "incLog")
     @GenericGenerator(name = "incLog", strategy = "native")
     @Column(name = "id", unique = true, nullable = false)
-    public Integer getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -39,17 +34,24 @@ public class Log {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     @Column(name = "time")
     @Temporal(TemporalType.TIMESTAMP)
     public Date getTime() {
         return time;
     }
 
-    public void setTime(Date time) {
+    public Log setId(Long id) {
+        this.id = id;
+        return this;
+    }
+
+    public Log setUser(User user) {
+        this.user = user;
+        return this;
+    }
+
+    public Log setTime(Date time) {
         this.time = time;
+        return this;
     }
 }

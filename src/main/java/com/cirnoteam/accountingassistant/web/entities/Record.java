@@ -16,7 +16,7 @@ import java.util.Date;
 @Entity
 @Table(name = "record", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
 public class Record {
-    private Integer id;
+    private Long id;
     private Account account;
     private Boolean expense;
     private Float amount;
@@ -28,12 +28,8 @@ public class Record {
     @GeneratedValue(generator = "incRecord")
     @GenericGenerator(name = "incRecord", strategy = "native")
     @Column(name = "id", unique = true, nullable = false)
-    public Integer getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -42,17 +38,9 @@ public class Record {
         return account;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
-    }
-
     @Column(name = "expense", nullable = false)
     public Boolean getExpense() {
         return expense;
-    }
-
-    public void setExpense(Boolean expense) {
-        this.expense = expense;
     }
 
     @Column(name = "amount", nullable = false)
@@ -60,26 +48,14 @@ public class Record {
         return amount;
     }
 
-    public void setAmount(Float amount) {
-        this.amount = amount;
-    }
-
     @Column(name = "remark")
     public String getRemark() {
         return remark;
     }
 
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
     @Column(name = "type", nullable = false)
     public Integer getType() {
         return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
     }
 
     @Column(name = "time", nullable = false)
@@ -88,7 +64,38 @@ public class Record {
         return time;
     }
 
-    public void setTime(Date time) {
+    public Record setId(Long id) {
+        this.id = id;
+        return this;
+    }
+
+    public Record setAccount(Account account) {
+        this.account = account;
+        return this;
+    }
+
+    public Record setExpense(Boolean expense) {
+        this.expense = expense;
+        return this;
+    }
+
+    public Record setAmount(Float amount) {
+        this.amount = amount;
+        return this;
+    }
+
+    public Record setRemark(String remark) {
+        this.remark = remark;
+        return this;
+    }
+
+    public Record setType(Integer type) {
+        this.type = type;
+        return this;
+    }
+
+    public Record setTime(Date time) {
         this.time = time;
+        return this;
     }
 }

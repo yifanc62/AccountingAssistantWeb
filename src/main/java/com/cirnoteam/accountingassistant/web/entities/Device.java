@@ -1,7 +1,6 @@
 package com.cirnoteam.accountingassistant.web.entities;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,18 +30,10 @@ public class Device {
         return uuid;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "username", nullable = false)
     public User getUser() {
         return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     @Column(name = "name", nullable = false)
@@ -50,17 +41,9 @@ public class Device {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Column(name = "token", nullable = false)
     public String getToken() {
         return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
 
     @Column(name = "tokenTime")
@@ -69,18 +52,10 @@ public class Device {
         return tokenTime;
     }
 
-    public void setTokenTime(Date tokenTime) {
-        this.tokenTime = tokenTime;
-    }
-
     @Column(name = "syncTime")
     @Temporal(TemporalType.TIMESTAMP)
     public Date getSyncTime() {
         return syncTime;
-    }
-
-    public void setSyncTime(Date syncTime) {
-        this.syncTime = syncTime;
     }
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "device")
@@ -88,7 +63,38 @@ public class Device {
         return dirtySet;
     }
 
-    public void setDirtySet(Set<Dirty> dirtySet) {
+    public Device setUuid(String uuid) {
+        this.uuid = uuid;
+        return this;
+    }
+
+    public Device setUser(User user) {
+        this.user = user;
+        return this;
+    }
+
+    public Device setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Device setToken(String token) {
+        this.token = token;
+        return this;
+    }
+
+    public Device setTokenTime(Date tokenTime) {
+        this.tokenTime = tokenTime;
+        return this;
+    }
+
+    public Device setSyncTime(Date syncTime) {
+        this.syncTime = syncTime;
+        return this;
+    }
+
+    public Device setDirtySet(Set<Dirty> dirtySet) {
         this.dirtySet = dirtySet;
+        return this;
     }
 }

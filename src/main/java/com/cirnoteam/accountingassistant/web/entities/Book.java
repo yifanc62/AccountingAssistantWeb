@@ -3,7 +3,6 @@ package com.cirnoteam.accountingassistant.web.entities;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +17,7 @@ import java.util.List;
 @Entity
 @Table(name = "book", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
 public class Book {
-    private Integer id;
+    private Long id;
     private User user;
     private String name;
     private List<Account> accounts = new ArrayList<>();
@@ -27,12 +26,8 @@ public class Book {
     @GeneratedValue(generator = "incBook")
     @GenericGenerator(name = "incBook", strategy = "native")
     @Column(name = "id", unique = true, nullable = false)
-    public Integer getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -41,17 +36,9 @@ public class Book {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     @Column(name = "name", nullable = false)
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "book")
@@ -59,9 +46,23 @@ public class Book {
         return accounts;
     }
 
-    public void setAccounts(List<Account> accounts) {
-        this.accounts = accounts;
+    public Book setId(Long id) {
+        this.id = id;
+        return this;
     }
 
+    public Book setUser(User user) {
+        this.user = user;
+        return this;
+    }
 
+    public Book setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Book setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
+        return this;
+    }
 }

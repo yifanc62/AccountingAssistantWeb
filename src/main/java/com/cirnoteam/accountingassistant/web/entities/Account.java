@@ -17,7 +17,7 @@ import java.util.List;
 @Entity
 @Table(name = "account", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
 public class Account {
-    private Integer id;
+    private Long id;
     private Book book;
     private Integer type;
     private Float balance;
@@ -28,12 +28,8 @@ public class Account {
     @GeneratedValue(generator = "incAccount")
     @GenericGenerator(name = "incAccount", strategy = "native")
     @Column(name = "id", unique = true, nullable = false)
-    public Integer getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -42,43 +38,57 @@ public class Account {
         return book;
     }
 
-    public void setBook(Book book) {
-        this.book = book;
-    }
 
     @Column(name = "type", nullable = false)
     public Integer getType() {
         return type;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
-    }
 
     @Column(name = "balance", nullable = false)
     public Float getBalance() {
         return balance;
     }
 
-    public void setBalance(Float balance) {
-        this.balance = balance;
-    }
 
     @Column(name = "name", nullable = false)
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "account")
     public List<Record> getRecords() {
         return records;
     }
 
-    public void setRecords(List<Record> records) {
+    public Account setId(Long id) {
+        this.id = id;
+        return this;
+    }
+
+    public Account setBook(Book book) {
+        this.book = book;
+        return this;
+    }
+
+    public Account setType(Integer type) {
+        this.type = type;
+        return this;
+    }
+
+    public Account setBalance(Float balance) {
+        this.balance = balance;
+        return this;
+    }
+
+    public Account setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Account setRecords(List<Record> records) {
         this.records = records;
+        return this;
     }
 }

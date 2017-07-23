@@ -16,9 +16,9 @@ import java.util.Date;
 @Entity
 @Table(name = "dirty", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
 public class Dirty {
-    private Integer id;
+    private Long id;
     private Device device;
-    private Integer rid;
+    private Long rid;
     private Integer type;
     private Boolean deleted;
     private Date time;
@@ -27,12 +27,8 @@ public class Dirty {
     @GeneratedValue(generator = "incDirty")
     @GenericGenerator(name = "incDirty", strategy = "native")
     @Column(name = "id", unique = true, nullable = false)
-    public Integer getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -41,17 +37,9 @@ public class Dirty {
         return device;
     }
 
-    public void setDevice(Device device) {
-        this.device = device;
-    }
-
     @Column(name = "rid", nullable = false)
-    public Integer getRid() {
+    public Long getRid() {
         return rid;
-    }
-
-    public void setRid(Integer rid) {
-        this.rid = rid;
     }
 
     @Column(name = "type", nullable = false)
@@ -59,17 +47,9 @@ public class Dirty {
         return type;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
     @Column(name = "deleted")
     public Boolean getDeleted() {
         return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
     }
 
     @Column(name = "time")
@@ -78,7 +58,33 @@ public class Dirty {
         return time;
     }
 
-    public void setTime(Date time) {
+    public Dirty setId(Long id) {
+        this.id = id;
+        return this;
+    }
+
+    public Dirty setDevice(Device device) {
+        this.device = device;
+        return this;
+    }
+
+    public Dirty setRid(Long rid) {
+        this.rid = rid;
+        return this;
+    }
+
+    public Dirty setType(Integer type) {
+        this.type = type;
+        return this;
+    }
+
+    public Dirty setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+        return this;
+    }
+
+    public Dirty setTime(Date time) {
         this.time = time;
+        return this;
     }
 }

@@ -11,10 +11,7 @@ import org.hibernate.cfg.Configuration;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * UserUtils
@@ -302,13 +299,13 @@ public class UserUtils {
             if (user == null) {
                 throw new RequestException("用户名与邮箱不符！");
             }
+            session.getTransaction().commit();
             String resetToken = generateUuid();
             String resetCode = generateVerifyCode();
             user.setResetToken(resetToken);
             user.setResetCode(resetCode);
             user.setResetTime(new Date());
             updateUser(session, user);
-            session.getTransaction().commit();
             return resetToken;
         } catch (HibernateException e) {
             e.printStackTrace();
@@ -444,5 +441,47 @@ public class UserUtils {
             throw new RequestException("用户头像不存在！");
         }
         return user.getAvatar();
+    }
+
+    public static boolean setAvatarPath(String username, String avatarPath) throws RequestException, DbException {
+        User user = getUser(username);
+        if (user == null) {
+            throw new RequestException("用户名不存在！");
+        }
+        user.setAvatar(avatarPath);
+        updateUser(factory.openSession(), user);
+        return true;
+    }
+
+    public static List<Device> getDevices(String username) throws RequestException, DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            session.getTransaction().begin();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Device> criteria = builder.createQuery(Device.class);
+            Root<Device> deviceRoot = criteria.from(Device.class);
+            criteria.select(deviceRoot).where(builder.equal(deviceRoot.get("username"), username));
+            List<Device> devices = session.createQuery(criteria).getResultList();
+            session.getTransaction().commit();
+            if (devices == null || devices.size() == 0) {
+                throw new RequestException("没有找到设备！");
+            }
+            return devices;
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("获取设备失败！");
+        }
+    }
+
+    public static List<String> getUuids(String username) throws RequestException, DbException {
+        List<String> uuids = new ArrayList<>();
+        for (Device device : getDevices(username)) {
+            uuids.add(device.getUuid());
+        }
+        return uuids;
     }
 }

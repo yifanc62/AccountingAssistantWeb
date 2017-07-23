@@ -34,17 +34,9 @@ public class User {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     @Column(name = "password", length = 32, nullable = false)
     public String getPassword() {
         return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     @Column(name = "email", unique = true, nullable = false)
@@ -52,17 +44,9 @@ public class User {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     @Column(name = "avatar")
     public String getAvatar() {
         return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
     }
 
     @Column(name = "activateToken")
@@ -70,17 +54,9 @@ public class User {
         return activateToken;
     }
 
-    public void setActivateToken(String activateToken) {
-        this.activateToken = activateToken;
-    }
-
     @Column(name = "activateCode")
     public String getActivateCode() {
         return activateCode;
-    }
-
-    public void setActivateCode(String activateCode) {
-        this.activateCode = activateCode;
     }
 
     @Column(name = "activateTime")
@@ -89,26 +65,14 @@ public class User {
         return activateTime;
     }
 
-    public void setActivateTime(Date activateTime) {
-        this.activateTime = activateTime;
-    }
-
     @Column(name = "resetToken")
     public String getResetToken() {
         return resetToken;
     }
 
-    public void setResetToken(String resetToken) {
-        this.resetToken = resetToken;
-    }
-
     @Column(name = "resetCode")
     public String getResetCode() {
         return resetCode;
-    }
-
-    public void setResetCode(String resetCode) {
-        this.resetCode = resetCode;
     }
 
     @Column(name = "resetTime")
@@ -117,17 +81,9 @@ public class User {
         return resetTime;
     }
 
-    public void setResetTime(Date resetTime) {
-        this.resetTime = resetTime;
-    }
-
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     public Set<Device> getDevices() {
         return devices;
-    }
-
-    public void setDevices(Set<Device> devices) {
-        this.devices = devices;
     }
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
@@ -135,16 +91,73 @@ public class User {
         return logs;
     }
 
-    public void setLogs(Set<Log> logs) {
-        this.logs = logs;
-    }
-
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     public List<Book> getBooks() {
         return books;
     }
 
-    public void setBooks(List<Book> books) {
+    public User setUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public User setPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
+    public User setEmail(String email) {
+        this.email = email;
+        return this;
+    }
+
+    public User setAvatar(String avatar) {
+        this.avatar = avatar;
+        return this;
+    }
+
+    public User setActivateToken(String activateToken) {
+        this.activateToken = activateToken;
+        return this;
+    }
+
+    public User setActivateCode(String activateCode) {
+        this.activateCode = activateCode;
+        return this;
+    }
+
+    public User setActivateTime(Date activateTime) {
+        this.activateTime = activateTime;
+        return this;
+    }
+
+    public User setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+        return this;
+    }
+
+    public User setResetCode(String resetCode) {
+        this.resetCode = resetCode;
+        return this;
+    }
+
+    public User setResetTime(Date resetTime) {
+        this.resetTime = resetTime;
+        return this;
+    }
+
+    public User setDevices(Set<Device> devices) {
+        this.devices = devices;
+        return this;
+    }
+
+    public User setLogs(Set<Log> logs) {
+        this.logs = logs;
+        return this;
+    }
+
+    public User setBooks(List<Book> books) {
         this.books = books;
+        return this;
     }
 }
