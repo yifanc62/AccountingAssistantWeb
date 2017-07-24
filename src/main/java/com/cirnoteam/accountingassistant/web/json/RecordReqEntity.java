@@ -1,5 +1,6 @@
 package com.cirnoteam.accountingassistant.web.json;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,6 +11,10 @@ public class RecordReqEntity {
     private String uuid;
     private String type;
     private List<SyncRecord> records;
+
+    public RecordReqEntity() {
+        this.records = new ArrayList<>();
+    }
 
     public String getToken() {
         return token;
@@ -44,6 +49,11 @@ public class RecordReqEntity {
 
     public RecordReqEntity setRecords(List<SyncRecord> records) {
         this.records = records;
+        return this;
+    }
+
+    public RecordReqEntity addRecord(SyncRecord record) {
+        records.add(record);
         return this;
     }
 }

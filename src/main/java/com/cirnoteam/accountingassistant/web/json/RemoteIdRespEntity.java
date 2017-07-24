@@ -1,6 +1,6 @@
 package com.cirnoteam.accountingassistant.web.json;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -10,7 +10,7 @@ public class RemoteIdRespEntity {
     private Map<Long, Long> idMap;
 
     public RemoteIdRespEntity() {
-        this.idMap = new HashMap<>();
+        this.idMap = new LinkedHashMap<>();
     }
 
     public Map<Long, Long> getIdMap() {

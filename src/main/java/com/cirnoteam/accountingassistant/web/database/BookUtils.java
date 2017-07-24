@@ -60,4 +60,9 @@ public class BookUtils {
         insertBook(factory.openSession(), book);
         return book.getId();
     }
+
+    public static void removeBook(Long id) throws DbException {
+        Book book = new Book().setId(id);
+        deleteBook(factory.openSession(), book);
+    }
 }

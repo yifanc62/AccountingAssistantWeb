@@ -1,5 +1,6 @@
 package com.cirnoteam.accountingassistant.web.json;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,6 +11,10 @@ public class AccountReqEntity {
     private String uuid;
     private String type;
     private List<SyncAccount> accounts;
+
+    public AccountReqEntity() {
+        this.accounts = new ArrayList<>();
+    }
 
     public String getToken() {
         return token;
@@ -44,6 +49,11 @@ public class AccountReqEntity {
 
     public AccountReqEntity setAccounts(List<SyncAccount> accounts) {
         this.accounts = accounts;
+        return this;
+    }
+
+    public AccountReqEntity addAccount(SyncAccount account) {
+        accounts.add(account);
         return this;
     }
 }
