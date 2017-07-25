@@ -1,6 +1,8 @@
 package com.cirnoteam.accountingassistant.web.database;
 
+import com.cirnoteam.accountingassistant.web.entities.Account;
 import com.cirnoteam.accountingassistant.web.entities.Record;
+import com.cirnoteam.accountingassistant.web.json.SyncRecord;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -58,10 +60,8 @@ public class RecordUtils {
         }
     }
 
-    private static Record getRecord(Long id) throws DbException {
-        Session session = null;
+    public static Record getRecord(Session session, Long id) throws DbException {
         try {
-            session = factory.openSession();
             session.getTransaction().begin();
             CriteriaBuilder builder = session.getCriteriaBuilder();
             CriteriaQuery<Record> criteria = builder.createQuery(Record.class);
@@ -76,6 +76,22 @@ public class RecordUtils {
                 session.getTransaction().rollback();
             }
             throw new DbException("获取流水失败！");
+        }
+    }
+
+    public static Long addRecord(SyncRecord syncRecord) throws DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            Record record = new Record().setAccount(new Account().setId(syncRecord.getRemoteAccountId())).setAmount(syncRecord.getAmount()).setExpense(syncRecord.getExpense()).setRemark(syncRecord.getRemark()).setType(syncRecord.getType()).setTime(syncRecord.getrTime());
+            insertRecord(session, record);
+            return record.getId();
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("同步流水失败！");
         }
     }
 }

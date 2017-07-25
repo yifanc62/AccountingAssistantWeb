@@ -60,10 +60,8 @@ public class BookUtils {
         }
     }
 
-    private static Book getBook(Long id) throws DbException {
-        Session session = null;
+    public static Book getBook(Session session, Long id) throws DbException {
         try {
-            session = factory.openSession();
             session.getTransaction().begin();
             CriteriaBuilder builder = session.getCriteriaBuilder();
             CriteriaQuery<Book> criteria = builder.createQuery(Book.class);
@@ -92,7 +90,35 @@ public class BookUtils {
         deleteBook(factory.openSession(), book);
     }
 
-    public static void modifyBook(SyncBook book) throws DbException {
+    public static void modifyBook(SyncBook syncBook) throws DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            Book book = getBook(session, syncBook.getRemoteId());
+            book.setName(syncBook.getName());
+            updateBook(session, book);
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("修改账本失败！");
+        }
+    }
 
+    public static Long addBook(SyncBook syncBook) throws DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            Book book = new Book().setUser(new User().setUsername(syncBook.getUsername())).setName(syncBook.getName());
+            insertBook(session, book);
+            return book.getId();
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("同步账本失败！");
+        }
     }
 }

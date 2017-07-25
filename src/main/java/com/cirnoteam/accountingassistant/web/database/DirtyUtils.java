@@ -1,7 +1,9 @@
 package com.cirnoteam.accountingassistant.web.database;
 
-import com.cirnoteam.accountingassistant.web.entities.Device;
-import com.cirnoteam.accountingassistant.web.entities.Dirty;
+import com.cirnoteam.accountingassistant.web.entities.*;
+import com.cirnoteam.accountingassistant.web.json.SyncAccount;
+import com.cirnoteam.accountingassistant.web.json.SyncBook;
+import com.cirnoteam.accountingassistant.web.json.SyncRecord;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -10,6 +12,7 @@ import org.hibernate.cfg.Configuration;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -64,10 +67,8 @@ public class DirtyUtils {
         }
     }
 
-    private static Dirty getDirty(Long id) throws DbException {
-        Session session = null;
+    private static Dirty getDirty(Session session, Long id) throws DbException {
         try {
-            session = factory.openSession();
             session.getTransaction().begin();
             CriteriaBuilder builder = session.getCriteriaBuilder();
             CriteriaQuery<Dirty> criteria = builder.createQuery(Dirty.class);
@@ -85,10 +86,8 @@ public class DirtyUtils {
         }
     }
 
-    private static Dirty getDirty(String uuid, Long rid, Integer type) throws DbException {
-        Session session = null;
+    private static Dirty getDirty(Session session, String uuid, Long rid, Integer type) throws DbException {
         try {
-            session = factory.openSession();
             session.getTransaction().begin();
             CriteriaBuilder builder = session.getCriteriaBuilder();
             CriteriaQuery<Dirty> criteria = builder.createQuery(Dirty.class);
@@ -130,19 +129,191 @@ public class DirtyUtils {
     }
 
     public static void addAllUuidDirty(String uuid, Long rid, Integer type, Boolean deleted, Date time) throws RequestException, DbException {
-        Device device = UserUtils.getDevice(uuid);
-        List<String> uuids = UserUtils.findOtherUuids(uuid);
-        for (String u : uuids) {
-            Device d = new Device().setUuid(u);
-            Dirty old = getDirty(uuid, rid, type);
-            if (old == null) {
-                insertDirty(factory.openSession(), new Dirty().setDevice(d).setRid(rid).setType(type).setDeleted(deleted).setTime(time));
-            } else {
-                if (old.getTime().before(time)) {
-                    old.setDeleted(deleted).setTime(time);
-                    updateDirty(factory.openSession(), old);
+        Session session = null;
+        try {
+            session = factory.openSession();
+            Device device = UserUtils.getDevice(uuid);
+            List<String> uuids = UserUtils.findOtherUuids(uuid);
+            for (String u : uuids) {
+                Device d = new Device().setUuid(u);
+                Dirty old = getDirty(session, uuid, rid, type);
+                if (old == null) {
+                    insertDirty(session, new Dirty().setDevice(d).setRid(rid).setType(type).setDeleted(deleted).setTime(time));
+                } else {
+                    if (old.getTime().before(time)) {
+                        old.setDeleted(deleted).setTime(time);
+                        updateDirty(session, old);
+                    }
                 }
             }
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("处理脏数据失败！");
+        }
+    }
+
+    public static List<SyncBook> getAllNonDeleteBooks(String uuid) throws RequestException, DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            session.getTransaction().begin();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Dirty> criteria = builder.createQuery(Dirty.class);
+            Root<Dirty> dirtyRoot = criteria.from(Dirty.class);
+            criteria.select(dirtyRoot).where(builder.and(builder.equal(dirtyRoot.get("uuid"), uuid), builder.equal(dirtyRoot.get("type"), TYPE_BOOK), builder.equal(dirtyRoot.get("deleted"), false)));
+            List<Dirty> dirties = session.createQuery(criteria).getResultList();
+            session.getTransaction().commit();
+            List<SyncBook> result = new ArrayList<>();
+            Session bookSession = factory.openSession();
+            for (Dirty dirty : dirties) {
+                Book book = BookUtils.getBook(bookSession, dirty.getRid());
+                result.add(new SyncBook().setRemoteId(book.getId()).setName(book.getName()).setUsername(book.getUser().getUsername()).setTime(dirty.getTime()));
+            }
+            return result;
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("处理脏数据失败！");
+        }
+    }
+
+    public static List<SyncBook> getAllDeleteBooks(String uuid) throws RequestException, DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            session.getTransaction().begin();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Dirty> criteria = builder.createQuery(Dirty.class);
+            Root<Dirty> dirtyRoot = criteria.from(Dirty.class);
+            criteria.select(dirtyRoot).where(builder.and(builder.equal(dirtyRoot.get("uuid"), uuid), builder.equal(dirtyRoot.get("type"), TYPE_BOOK), builder.equal(dirtyRoot.get("deleted"), true)));
+            List<Dirty> dirties = session.createQuery(criteria).getResultList();
+            session.getTransaction().commit();
+            List<SyncBook> result = new ArrayList<>();
+            Session bookSession = factory.openSession();
+            for (Dirty dirty : dirties) {
+                Book book = BookUtils.getBook(bookSession, dirty.getRid());
+                result.add(new SyncBook().setRemoteId(book.getId()));
+            }
+            return result;
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("处理脏数据失败！");
+        }
+    }
+
+    public static List<SyncAccount> getAllNonDeleteAccounts(String uuid) throws RequestException, DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            session.getTransaction().begin();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Dirty> criteria = builder.createQuery(Dirty.class);
+            Root<Dirty> dirtyRoot = criteria.from(Dirty.class);
+            criteria.select(dirtyRoot).where(builder.and(builder.equal(dirtyRoot.get("uuid"), uuid), builder.equal(dirtyRoot.get("type"), TYPE_ACCOUNT), builder.equal(dirtyRoot.get("deleted"), false)));
+            List<Dirty> dirties = session.createQuery(criteria).getResultList();
+            session.getTransaction().commit();
+            List<SyncAccount> result = new ArrayList<>();
+            Session accountSession = factory.openSession();
+            for (Dirty dirty : dirties) {
+                Account account = AccountUtils.getAccount(accountSession, dirty.getRid());
+                result.add(new SyncAccount().setRemoteId(account.getId()).setType(account.getType()).setBalance(account.getBalance()).setName(account.getName()).setRemoteBookId(account.getBook().getId()).setTime(dirty.getTime()));
+            }
+            return result;
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("处理脏数据失败！");
+        }
+    }
+
+    public static List<SyncAccount> getAllDeleteAccounts(String uuid) throws RequestException, DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            session.getTransaction().begin();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Dirty> criteria = builder.createQuery(Dirty.class);
+            Root<Dirty> dirtyRoot = criteria.from(Dirty.class);
+            criteria.select(dirtyRoot).where(builder.and(builder.equal(dirtyRoot.get("uuid"), uuid), builder.equal(dirtyRoot.get("type"), TYPE_ACCOUNT), builder.equal(dirtyRoot.get("deleted"), true)));
+            List<Dirty> dirties = session.createQuery(criteria).getResultList();
+            session.getTransaction().commit();
+            List<SyncAccount> result = new ArrayList<>();
+            Session accountSession = factory.openSession();
+            for (Dirty dirty : dirties) {
+                Account account = AccountUtils.getAccount(accountSession, dirty.getRid());
+                result.add(new SyncAccount().setRemoteId(account.getId()));
+            }
+            return result;
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("处理脏数据失败！");
+        }
+    }
+
+    public static List<SyncRecord> getAllNonDeleteRecords(String uuid) throws RequestException, DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            session.getTransaction().begin();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Dirty> criteria = builder.createQuery(Dirty.class);
+            Root<Dirty> dirtyRoot = criteria.from(Dirty.class);
+            criteria.select(dirtyRoot).where(builder.and(builder.equal(dirtyRoot.get("uuid"), uuid), builder.equal(dirtyRoot.get("type"), TYPE_RECORD), builder.equal(dirtyRoot.get("deleted"), false)));
+            List<Dirty> dirties = session.createQuery(criteria).getResultList();
+            session.getTransaction().commit();
+            List<SyncRecord> result = new ArrayList<>();
+            Session recordSession = factory.openSession();
+            for (Dirty dirty : dirties) {
+                Record record = RecordUtils.getRecord(recordSession, dirty.getRid());
+                result.add(new SyncRecord().setRemoteId(record.getId()).setAmount(record.getAmount()).setExpense(record.getExpense()).setRemark(record.getRemark()).setType(record.getType()).setRemoteAccountId(record.getAccount().getId()).setrTime(record.getTime()).setTime(dirty.getTime()));
+            }
+            return result;
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("处理脏数据失败！");
+        }
+    }
+
+    public static List<SyncRecord> getAllDeleteRecords(String uuid) throws RequestException, DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            session.getTransaction().begin();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Dirty> criteria = builder.createQuery(Dirty.class);
+            Root<Dirty> dirtyRoot = criteria.from(Dirty.class);
+            criteria.select(dirtyRoot).where(builder.and(builder.equal(dirtyRoot.get("uuid"), uuid), builder.equal(dirtyRoot.get("type"), TYPE_RECORD), builder.equal(dirtyRoot.get("deleted"), true)));
+            List<Dirty> dirties = session.createQuery(criteria).getResultList();
+            session.getTransaction().commit();
+            List<SyncRecord> result = new ArrayList<>();
+            Session recordSession = factory.openSession();
+            for (Dirty dirty : dirties) {
+                Record record = RecordUtils.getRecord(recordSession, dirty.getRid());
+                result.add(new SyncRecord().setRemoteId(record.getId()));
+            }
+            return result;
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("处理脏数据失败！");
         }
     }
 }

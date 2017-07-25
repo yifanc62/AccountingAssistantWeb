@@ -60,10 +60,8 @@ public class AccountUtils {
         }
     }
 
-    private static Account getAccount(Long id) throws DbException {
-        Session session = null;
+    public static Account getAccount(Session session, Long id) throws DbException {
         try {
-            session = factory.openSession();
             session.getTransaction().begin();
             CriteriaBuilder builder = session.getCriteriaBuilder();
             CriteriaQuery<Account> criteria = builder.createQuery(Account.class);

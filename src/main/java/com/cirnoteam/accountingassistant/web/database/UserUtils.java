@@ -65,10 +65,8 @@ public class UserUtils {
         return sb.toString();
     }
 
-    private static User getUser(String username) throws DbException {
-        Session session = null;
+    private static User getUser(Session session, String username) throws DbException {
         try {
-            session = factory.openSession();
             session.getTransaction().begin();
             CriteriaBuilder builder = session.getCriteriaBuilder();
             CriteriaQuery<User> criteria = builder.createQuery(User.class);
@@ -320,9 +318,19 @@ public class UserUtils {
         if (newPassword.length() != 32) {
             throw new RequestException("密码md5长度错误！");
         }
-        User user = getUser(username);
-        user.setPassword(newPassword);
-        updateUser(factory.openSession(), user);
+        Session session = null;
+        try {
+            session = factory.openSession();
+            User user = getUser(session, username).setPassword(newPassword);
+            updateUser(session, user);
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("获取用户失败！");
+        }
+
     }
 
     public static String addDevice(String username, String uuid, String deviceName) throws DbException {
@@ -330,7 +338,7 @@ public class UserUtils {
         try {
             session = factory.openSession();
             session.getTransaction().begin();
-            User user = getUser(username);
+            User user = getUser(factory.openSession(), username);
             Device device = new Device();
             String token = generateUuid();
             device.setUser(user);
@@ -382,7 +390,7 @@ public class UserUtils {
             session = factory.openSession();
             session.getTransaction().begin();
             Log log = new Log();
-            log.setUser(getUser(username));
+            log.setUser(getUser(factory.openSession(), username));
             log.setTime(new Date());
             session.persist(log);
             session.getTransaction().commit();
@@ -396,7 +404,7 @@ public class UserUtils {
     }
 
     public static boolean login(String username, String password) throws RequestException, DbException {
-        User user = getUser(username);
+        User user = getUser(factory.openSession(), username);
         if (user == null) {
             throw new RequestException("用户名不存在！");
         }
@@ -411,7 +419,7 @@ public class UserUtils {
     }
 
     public static String getActivateCode(String username) throws RequestException, DbException {
-        User user = getUser(username);
+        User user = getUser(factory.openSession(), username);
         if (user == null) {
             throw new RequestException("用户名不存在！");
         }
@@ -422,7 +430,7 @@ public class UserUtils {
     }
 
     public static String getResetCode(String username) throws RequestException, DbException {
-        User user = getUser(username);
+        User user = getUser(factory.openSession(), username);
         if (user == null) {
             throw new RequestException("用户名不存在！");
         }
@@ -433,7 +441,7 @@ public class UserUtils {
     }
 
     public static String getAvatarPath(String username) throws RequestException, DbException {
-        User user = getUser(username);
+        User user = getUser(factory.openSession(), username);
         if (user == null) {
             throw new RequestException("用户名不存在！");
         }
@@ -444,7 +452,7 @@ public class UserUtils {
     }
 
     public static boolean setAvatarPath(String username, String avatarPath) throws RequestException, DbException {
-        User user = getUser(username);
+        User user = getUser(factory.openSession(), username);
         if (user == null) {
             throw new RequestException("用户名不存在！");
         }
