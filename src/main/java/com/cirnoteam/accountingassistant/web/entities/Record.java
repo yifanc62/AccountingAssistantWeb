@@ -59,7 +59,7 @@ public class Record {
     }
 
     @Column(name = "time", nullable = false)
-    @Temporal(TemporalType.TIME)
+    @Temporal(TemporalType.TIMESTAMP)
     public Date getTime() {
         return time;
     }
