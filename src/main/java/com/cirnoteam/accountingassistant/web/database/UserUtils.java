@@ -351,7 +351,7 @@ public class UserUtils {
         }
     }
 
-    private static Device getDevice(String uuid) throws DbException {
+    public static Device getDevice(String uuid) throws DbException {
         Session session = null;
         try {
             session = factory.openSession();
@@ -483,5 +483,31 @@ public class UserUtils {
             uuids.add(device.getUuid());
         }
         return uuids;
+    }
+
+    public static List<String> findOtherUuids(String uuid) throws RequestException, DbException {
+        Session session = null;
+        try {
+            session = factory.openSession();
+            session.getTransaction().begin();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Device> criteria = builder.createQuery(Device.class);
+            Root<Device> deviceRoot = criteria.from(Device.class);
+            criteria.select(deviceRoot).where(builder.equal(deviceRoot.get("uuid"), uuid));
+            Device device = session.createQuery(criteria).uniqueResult();
+            session.getTransaction().commit();
+            if (device == null) {
+                throw new RequestException("没有找到设备！");
+            }
+            List<String> uuids = getUuids(device.getUser().getUsername());
+            uuids.remove(uuid);
+            return uuids;
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
+            throw new DbException("获取设备失败！");
+        }
     }
 }

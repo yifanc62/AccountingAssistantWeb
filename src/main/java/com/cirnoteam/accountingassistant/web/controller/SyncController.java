@@ -52,66 +52,66 @@ public class SyncController {
     @ResponseBody
     @RequestMapping("/add/account")
     public Response addAccount(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/add/record")
     public Response addRecord(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/modify/book")
     public Response modifyBook(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/modify/account")
     public Response modifyAccount(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/modify/record")
     public Response modifyRecord(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/delete/book")
     public Response deleteBook(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/delete/account")
     public Response deleteAccount(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/delete/record")
     public Response deleteRecord(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/get/book")
     public Response getBook(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/get/account")
     public Response getAccount(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 
     @ResponseBody
     @RequestMapping("/get/record")
     public Response getRecord(HttpServletRequest request) throws IOException {
-
+        return new Response(200);
     }
 }
